@@ -1,8 +1,69 @@
 import { LockFilled, LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Flex, Form, Input, Layout, Space } from 'antd';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  Alert,
+  Button,
+  Card,
+  Checkbox,
+  Flex,
+  Form,
+  Input,
+  Layout,
+  Space,
+} from 'antd';
 import Logo from '../../components/Logo';
+import { usePermission } from '../../hooks/usePermission';
+import { login, logout, self } from '../../https/api';
+import { useAuthStore } from '../../store';
+import type { Credentials } from '../../types';
+
+// login User
+
+const loginUser = async (credentials: Credentials) => {
+  const { data } = await login(credentials);
+  return data;
+};
+const getSelf = async () => {
+  const { data } = await self();
+  return data;
+};
 
 const LoginPage = () => {
+  const { isAllowed } = usePermission();
+  const { setUser, logout: logoutFromStore } = useAuthStore();
+
+  const { refetch } = useQuery({
+    queryKey: ['self'],
+    queryFn: getSelf,
+    enabled: false,
+  });
+
+  const { mutate: logoutMutate } = useMutation({
+    mutationKey: ['logout'],
+    mutationFn: logout,
+    onSuccess: async () => {
+      // logout from store
+      logoutFromStore();
+      return;
+    },
+  });
+
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationKey: ['login'],
+    mutationFn: loginUser,
+    onSuccess: async () => {
+      const selfDataPromise = await refetch();
+      // logout or redirect to client ui
+      // window.location.href = "http://clientui/url"
+      // "admin", "manager", "customer"
+      if (!isAllowed(selfDataPromise.data)) {
+        logoutMutate();
+        return;
+      }
+
+      setUser(selfDataPromise.data);
+    },
+  });
   return (
     <>
       <Layout
@@ -34,7 +95,19 @@ const LoginPage = () => {
               </Space>
             }
           >
-            <Form initialValues={{ remember: true }}>
+            <Form
+              initialValues={{ remember: true }}
+              onFinish={(values) => {
+                mutate({ email: values.username, password: values.password });
+              }}
+            >
+              {isError && (
+                <Alert
+                  style={{ marginBottom: 24 }}
+                  type='error'
+                  title={error?.message}
+                />
+              )}
               <Form.Item
                 name='username'
                 rules={[
@@ -59,7 +132,10 @@ const LoginPage = () => {
                   },
                 ]}
               >
-                <Input prefix={<LockOutlined />} />
+                <Input.Password
+                  prefix={<LockOutlined />}
+                  placeholder='Password'
+                />
               </Form.Item>
               <Flex justify='space-between' align='baseline'>
                 <Form.Item name='remember' valuePropName='checked'>
@@ -74,6 +150,7 @@ const LoginPage = () => {
                   type='primary'
                   htmlType='submit'
                   style={{ width: '100%' }}
+                  loading={isPending}
                 >
                   Login
                 </Button>

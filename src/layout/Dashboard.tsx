@@ -1,15 +1,142 @@
-import { Navigate, Outlet } from 'react-router';
+import Icon, { BellFilled } from '@ant-design/icons';
+import {
+  Avatar,
+  Badge,
+  Dropdown,
+  Flex,
+  Layout,
+  Menu,
+  Space,
+  theme,
+} from 'antd';
+import { useState } from 'react';
+import { Navigate, NavLink, Outlet } from 'react-router';
+import Logo from '../components/Logo';
 import { useAuthStore } from '../store';
+const { Sider, Header, Content, Footer } = Layout;
+
+const getMenuItem = (role: string) => {
+  const baseItems = [
+    {
+      key: '/',
+      icon: <Icon />,
+      label: <NavLink to='/'>Home</NavLink>,
+    },
+
+    {
+      key: '/products',
+      icon: <Icon />,
+      label: <NavLink to='/'>Products</NavLink>,
+    },
+    {
+      key: '/orders',
+      icon: <Icon />,
+      label: <NavLink to='/'>Orders</NavLink>,
+    },
+    {
+      key: '/promos',
+      icon: <Icon />,
+      label: <NavLink to='/'>Promos</NavLink>,
+    },
+  ];
+  if (role === 'admin') {
+    const menus = [...baseItems];
+    menus.splice(1, 0, {
+      key: '/users',
+      icon: <Icon />,
+      label: <NavLink to='/'>Users</NavLink>,
+    });
+    menus.splice(2, 0, {
+      key: '/restaurants',
+      icon: <Icon />,
+      label: <NavLink to='/'>Restaurants</NavLink>,
+    });
+
+    return menus;
+  }
+  return baseItems;
+};
 
 const Dashboard = () => {
+  const [collapsed, setCollapsed] = useState(false);
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
   const { user } = useAuthStore();
   if (!user) {
-    return <Navigate to='/login' replace />;
+    return <Navigate to='/auth/login' replace />;
   }
+
+  const items = getMenuItem(user.role);
   return (
     <div>
-      Welocome to Dashboard
-      <Outlet />
+      <Layout style={{ minHeight: '100vh', background: colorBgContainer }}>
+        <Sider
+          collapsible
+          theme='light'
+          collapsed={collapsed}
+          onCollapse={(value) => setCollapsed(value)}
+        >
+          <div className='logo'>
+            <Logo />
+          </div>
+          <Menu
+            theme='light'
+            defaultSelectedKeys={['1']}
+            mode='inline'
+            items={items}
+          />
+        </Sider>
+        <Layout>
+          <Header
+            style={{
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              background: colorBgContainer,
+            }}
+          >
+            <Flex gap='middle' align='start' justify='space-between'>
+              <Badge
+                text={
+                  user.role === 'admin' ? 'You are a admin' : user.tenant?.name
+                }
+                status='success'
+              />
+
+              <Space size={16}>
+                <Badge dot={true}>
+                  <BellFilled />
+                </Badge>
+                <Dropdown
+                  menu={{
+                    items: [
+                      {
+                        key: 'logout',
+                        label: 'Logout',
+                        onClick: () => {},
+                      },
+                    ],
+                  }}
+                  placement='bottomRight'
+                >
+                  <Avatar
+                    style={{
+                      backgroundColor: '#fde3cf',
+                      color: '#f56a00',
+                    }}
+                  >
+                    U
+                  </Avatar>
+                </Dropdown>
+              </Space>
+            </Flex>
+          </Header>
+          <Content style={{ margin: '24px' }}>
+            <Outlet />
+          </Content>
+          <Footer style={{ textAlign: 'center' }}>Mernspace pizza shop</Footer>
+        </Layout>
+      </Layout>
     </div>
   );
 };

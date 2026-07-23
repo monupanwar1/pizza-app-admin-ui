@@ -1,4 +1,5 @@
 import Icon, { BellFilled } from '@ant-design/icons';
+import { useMutation } from '@tanstack/react-query';
 import {
   Avatar,
   Badge,
@@ -11,7 +12,13 @@ import {
 } from 'antd';
 import { useState } from 'react';
 import { Navigate, NavLink, Outlet } from 'react-router';
-import Logo from '../components/Logo';
+import BasketIcon from '../components/icons/BasketIcon';
+import { foodIcon } from '../components/icons/FoodIcon';
+import GiftIcon from '../components/icons/GiftIcon';
+import Home from '../components/icons/Home';
+import Logo from '../components/icons/Logo';
+import UserIcon from '../components/icons/UserIcon';
+import { logout } from '../https/api';
 import { useAuthStore } from '../store';
 const { Sider, Header, Content, Footer } = Layout;
 
@@ -19,37 +26,37 @@ const getMenuItem = (role: string) => {
   const baseItems = [
     {
       key: '/',
-      icon: <Icon />,
+      icon: <Icon component={Home} />,
       label: <NavLink to='/'>Home</NavLink>,
     },
 
     {
       key: '/products',
-      icon: <Icon />,
-      label: <NavLink to='/'>Products</NavLink>,
+      icon: <Icon component={foodIcon} />,
+      label: <NavLink to='/products'>Products</NavLink>,
     },
     {
       key: '/orders',
-      icon: <Icon />,
-      label: <NavLink to='/'>Orders</NavLink>,
+      icon: <Icon component={BasketIcon} />,
+      label: <NavLink to='/orders'>Orders</NavLink>,
     },
     {
       key: '/promos',
-      icon: <Icon />,
-      label: <NavLink to='/'>Promos</NavLink>,
+      icon: <Icon component={GiftIcon} />,
+      label: <NavLink to='/promos'>Promos</NavLink>,
     },
   ];
   if (role === 'admin') {
     const menus = [...baseItems];
     menus.splice(1, 0, {
       key: '/users',
-      icon: <Icon />,
-      label: <NavLink to='/'>Users</NavLink>,
+      icon: <Icon component={UserIcon} />,
+      label: <NavLink to='/users'>Users</NavLink>,
     });
     menus.splice(2, 0, {
       key: '/restaurants',
-      icon: <Icon />,
-      label: <NavLink to='/'>Restaurants</NavLink>,
+      icon: <Icon component={foodIcon} />,
+      label: <NavLink to='/restaurants'>Restaurants</NavLink>,
     });
 
     return menus;
@@ -58,6 +65,17 @@ const getMenuItem = (role: string) => {
 };
 
 const Dashboard = () => {
+  const { logout: logoutFromStore } = useAuthStore();
+
+  const { mutate: logoutMutate } = useMutation({
+    mutationKey: ['logout'],
+    mutationFn: logout,
+    onSuccess: async () => {
+      logoutFromStore();
+      return;
+    },
+  });
+
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer },
@@ -113,7 +131,7 @@ const Dashboard = () => {
                       {
                         key: 'logout',
                         label: 'Logout',
-                        onClick: () => {},
+                        onClick: () => logoutMutate(),
                       },
                     ],
                   }}

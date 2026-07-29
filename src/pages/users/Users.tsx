@@ -6,7 +6,7 @@ import { Link, Navigate } from 'react-router';
 // import { PER_PAGE } from '../../constants';
 import { getUsers } from '../../https/api';
 import { useAuthStore } from '../../store';
-import type { User } from '../../types';
+import type { FieldData, User } from '../../types';
 import UsersFilter from './UsersFilter';
 
 const columns = [
@@ -49,6 +49,7 @@ const columns = [
 
 const Users = () => {
   const [form] = Form.useForm();
+  const [filterForm] = Form.useForm();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [currentEditingUser, setCurrentEditingUser] = useState<User | null>(
     null,
@@ -70,6 +71,20 @@ const Users = () => {
       return getUsers().then((res) => res.data);
     },
   });
+
+  const onFilterChange = (changedFields: FieldData[]) => {
+    console.log(changedFields);
+
+    // [
+    //     {q: 'something'},
+    //     {role: 'admin'}
+    // ]
+
+    // {
+    //     q: 'something',
+    //     role: 'admin'
+    // }
+  };
 
   const { user } = useAuthStore();
 
@@ -95,7 +110,7 @@ const Users = () => {
           {isLoading && <div>Loading...</div>}
           {isError && <div>{error.message}</div>}
         </Flex>
-        <Form>
+        <Form form={filterForm} onFieldsChange={onFilterChange}>
           <UsersFilter>
             <Button
               type='primary'

@@ -16,3 +16,7 @@ export type User = {
   createdAt: string;
   tenant: Tenant | null;
 };
+export type FieldData = {
+  name: string[];
+  value?: string;
+};

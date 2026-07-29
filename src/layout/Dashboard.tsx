@@ -30,11 +30,11 @@ const getMenuItem = (role: string) => {
       label: <NavLink to='/'>Home</NavLink>,
     },
 
-    {
-      key: '/products',
-      icon: <Icon component={foodIcon} />,
-      label: <NavLink to='/products'>Products</NavLink>,
-    },
+    // {
+    //   key: '/products',
+    //   icon: <Icon component={foodIcon} />,
+    //   label: <NavLink to='/products'>Products</NavLink>,
+    // },
     {
       key: '/orders',
       icon: <Icon component={BasketIcon} />,

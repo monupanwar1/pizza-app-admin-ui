@@ -1,12 +1,22 @@
 import { PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import { Breadcrumb, Button, Drawer, Flex, Form, Space, Table } from 'antd';
+import {
+  Breadcrumb,
+  Button,
+  Drawer,
+  Flex,
+  Form,
+  Space,
+  Table,
+  theme,
+} from 'antd';
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router';
 // import { PER_PAGE } from '../../constants';
 import { getUsers } from '../../https/api';
 import { useAuthStore } from '../../store';
 import type { FieldData, User } from '../../types';
+import UserForm from './UserForm';
 import UsersFilter from './UsersFilter';
 
 const columns = [
@@ -48,6 +58,9 @@ const columns = [
 ];
 
 const Users = () => {
+  const {
+    token: { colorBgLayout },
+  } = theme.useToken();
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -154,6 +167,7 @@ const Users = () => {
         <Drawer
           title={currentEditingUser ? 'Edit User' : 'Add User'}
           size={720}
+          styles={{ body: { backgroundColor: colorBgLayout } }}
           open={drawerOpen}
           onClose={() => {
             setCurrentEditingUser(null);
@@ -172,7 +186,9 @@ const Users = () => {
             </Space>
           }
         >
-          <Form layout='vertical' form={form}></Form>
+          <Form layout='vertical' form={form}>
+            <UserForm />
+          </Form>
         </Drawer>
       </Space>
     </>

@@ -1,10 +1,10 @@
-import { Breadcrumb, Button, Drawer, Space, Table } from 'antd';
-import { RightOutlined, PlusOutlined } from '@ant-design/icons';
-import { Link, Navigate } from 'react-router';
+import { PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import { useAuthStore } from '../../store';
+import { Breadcrumb, Button, Drawer, Space, Table } from 'antd';
 import React from 'react';
+import { Link, Navigate } from 'react-router';
 import { getTenants } from '../../https/api';
+import { useAuthStore } from '../../store';
 import TenantFilter from './TenantFilter';
 
 const columns = [
@@ -86,7 +86,7 @@ const Tenants = () => {
           }}
           extra={
             <Space>
-              <Button>Cancel</Button>
+              <Button onClick={()=>setDrawerOpen(false)}>Cancel</Button>
               <Button type='primary'>Submit</Button>
             </Space>
           }

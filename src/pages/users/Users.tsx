@@ -1,5 +1,5 @@
 import { PlusOutlined, RightOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Breadcrumb,
   Button,
@@ -13,9 +13,9 @@ import {
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router';
 // import { PER_PAGE } from '../../constants';
-import { getUsers } from '../../https/api';
+import { createUser, getUsers } from '../../https/api';
 import { useAuthStore } from '../../store';
-import type { FieldData, User } from '../../types';
+import type { CreateUserData, FieldData, User } from '../../types';
 import UserForm from './UserForm';
 import UsersFilter from './UsersFilter';
 
@@ -58,10 +58,11 @@ const columns = [
 ];
 
 const Users = () => {
+  const [form] = Form.useForm();
+  const queryClient = useQueryClient();
   const {
     token: { colorBgLayout },
   } = theme.useToken();
-  const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [currentEditingUser, setCurrentEditingUser] = useState<User | null>(
@@ -85,18 +86,25 @@ const Users = () => {
     },
   });
 
+  const { mutate: userMutate } = useMutation({
+    mutationKey: ['user'],
+    mutationFn: async (data: CreateUserData) =>
+      createUser(data).then((res) => res.data),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      return;
+    },
+  });
+
+  const onHandleSubmit = async () => {
+    await form.validateFields();
+    await userMutate(form.getFieldsValue());
+    form.resetFields();
+    setDrawerOpen(false);
+  };
+
   const onFilterChange = (changedFields: FieldData[]) => {
     console.log(changedFields);
-
-    // [
-    //     {q: 'something'},
-    //     {role: 'admin'}
-    // ]
-
-    // {
-    //     q: 'something',
-    //     role: 'admin'
-    // }
   };
 
   const { user } = useAuthStore();
@@ -182,7 +190,9 @@ const Users = () => {
               >
                 Cancel
               </Button>
-              <Button type='primary'>Submit</Button>
+              <Button type='primary' onClick={onHandleSubmit}>
+                Submit
+              </Button>
             </Space>
           }
         >

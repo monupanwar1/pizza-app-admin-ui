@@ -20,3 +20,11 @@ export type FieldData = {
   name: string[];
   value?: string;
 };
+export type CreateUserData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: string;
+  tenantId: number;
+};

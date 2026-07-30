@@ -45,7 +45,7 @@ const UserForm = () => {
           <Col span={12}>
             <Form.Item
               label='Email'
-              name='Email'
+              name='email'
               rules={[
                 {
                   required: true,
@@ -110,12 +110,14 @@ const UserForm = () => {
             <Form.Item
               label='Restaurant'
               name='tenantId'
-              rules={[
-                {
-                  required: true,
-                  message: 'Restaurant is required',
-                },
-              ]}
+              rules={
+                [
+                  // {
+                  //   required: true,
+                  //   message: 'Restaurant is required',
+                  // },
+                ]
+              }
             >
               <Select
                 style={{ width: '100%' }}
@@ -124,6 +126,7 @@ const UserForm = () => {
                 placeholder='Select restaurant'
                 options={tenants?.map((tenant: Tenant) => ({
                   value: tenant.id,
+                  key: tenant.id,
                   label: tenant.name,
                 }))}
               ></Select>

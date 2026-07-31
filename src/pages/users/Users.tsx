@@ -13,6 +13,7 @@ import {
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router';
 // import { PER_PAGE } from '../../constants';
+import { PER_PAGE } from '../../constants';
 import { createUser, getUsers } from '../../https/api';
 import { useAuthStore } from '../../store';
 import type { CreateUserData, FieldData, User } from '../../types';
@@ -65,6 +66,10 @@ const Users = () => {
   } = theme.useToken();
   const [filterForm] = Form.useForm();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [queryParams, setQueryParams] = useState({
+    perPage: PER_PAGE,
+    currentPage: 1,
+  });
   const [currentEditingUser, setCurrentEditingUser] = useState<User | null>(
     null,
   );
@@ -80,9 +85,12 @@ const Users = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['users'],
+    queryKey: ['users', queryParams],
     queryFn: () => {
-      return getUsers().then((res) => res.data);
+      const queryString = new URLSearchParams(
+        queryParams as unknown as Record<string, string>,
+      ).toString();
+      return getUsers(queryString).then((res) => res.data);
     },
   });
 
@@ -166,9 +174,18 @@ const Users = () => {
           dataSource={users?.data}
           rowKey={'id'}
           pagination={{
-            total: 10,
-            pageSize: 6,
-            current: 1,
+            total: users?.total,
+            pageSize: queryParams.perPage,
+            current: queryParams.currentPage,
+            onChange: (page) => {
+              console.log(page);
+              setQueryParams((prev) => {
+                return {
+                  ...prev,
+                  currentPage: page,
+                };
+              });
+            },
           }}
         />
 

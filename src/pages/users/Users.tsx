@@ -1,5 +1,14 @@
-import { PlusOutlined, RightOutlined } from '@ant-design/icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from '@ant-design/icons';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   Breadcrumb,
   Button,
@@ -7,12 +16,15 @@ import {
   Flex,
   Form,
   Space,
+  Spin,
   Table,
   theme,
+  Typography,
 } from 'antd';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router';
 // import { PER_PAGE } from '../../constants';
+import { debounce } from 'lodash';
 import { PER_PAGE } from '../../constants';
 import { createUser, getUsers } from '../../https/api';
 import { useAuthStore } from '../../store';
@@ -74,24 +86,23 @@ const Users = () => {
     null,
   );
 
-  // const [queryParams, setQueryParams] = useState({
-  //   perPage: PER_PAGE,
-  //   currentPage: 1,
-  // });
-
   const {
     data: users,
-    isLoading,
+    isFetching,
     isError,
     error,
   } = useQuery({
     queryKey: ['users', queryParams],
     queryFn: () => {
+      const filterParams = Object.fromEntries(
+        Object.entries(queryParams).filter((item) => !!item[1]),
+      );
       const queryString = new URLSearchParams(
-        queryParams as unknown as Record<string, string>,
+        filterParams as unknown as Record<string, string>,
       ).toString();
       return getUsers(queryString).then((res) => res.data);
     },
+    placeholderData: keepPreviousData,
   });
 
   const { mutate: userMutate } = useMutation({
@@ -111,8 +122,24 @@ const Users = () => {
     setDrawerOpen(false);
   };
 
+  const debouncedQUpdate = useMemo(() => {
+    return debounce((value: string | undefined) => {
+      setQueryParams((prev) => ({ ...prev, q: value }));
+    }, 1000);
+  }, []);
+
   const onFilterChange = (changedFields: FieldData[]) => {
-    console.log(changedFields);
+    const changedFilterFields = changedFields
+      .map((item) => ({
+        [item.name[0]]: item.value,
+      }))
+      .reduce((acc, item) => ({ ...acc, ...item }), {});
+
+    if ('q' in changedFilterFields) {
+      debouncedQUpdate(changedFilterFields.q);
+    } else {
+      setQueryParams((prev) => ({ ...prev, ...changedFilterFields }));
+    }
   };
 
   const { user } = useAuthStore();
@@ -136,8 +163,14 @@ const Users = () => {
               },
             ]}
           />
-          {isLoading && <div>Loading...</div>}
-          {isError && <div>{error.message}</div>}
+          {isFetching && (
+            <Spin
+              indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+            />
+          )}
+          {isError && (
+            <Typography.Text type='danger'>{error.message}</Typography.Text>
+          )}
         </Flex>
         <Form form={filterForm} onFieldsChange={onFilterChange}>
           <UsersFilter>

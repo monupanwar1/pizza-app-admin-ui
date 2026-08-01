@@ -227,6 +227,7 @@ const Users = () => {
           size={720}
           styles={{ body: { backgroundColor: colorBgLayout } }}
           open={drawerOpen}
+          destroyOnHidden={true}
           onClose={() => {
             setCurrentEditingUser(null);
             setDrawerOpen(false);
@@ -235,6 +236,7 @@ const Users = () => {
             <Space>
               <Button
                 onClick={() => {
+                  form.resetFields();
                   setDrawerOpen(false);
                 }}
               >

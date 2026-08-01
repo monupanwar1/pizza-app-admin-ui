@@ -1,4 +1,4 @@
-import type { CreateUserData, Credentials } from '../types';
+import type { CreateTenantData, CreateUserData, Credentials } from '../types';
 import { api } from './client';
 
 export const AUTH_SERVICE = '/auth';
@@ -13,3 +13,5 @@ export const getUsers = (queryString: string) =>
   api.get(`/users?${queryString}`);
 export const getTenants = () => api.get('/tenants');
 export const createUser = (user: CreateUserData) => api.post('/users', user);
+export const createTenant = (tenant: CreateTenantData) =>
+  api.post('/tenants', tenant);

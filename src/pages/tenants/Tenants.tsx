@@ -108,6 +108,7 @@ const Tenants = () => {
       setQueryParams((prev) => ({
         ...prev,
         q: value,
+        currentPage: 1,
       }));
     }, 500);
   }, []);
@@ -122,7 +123,11 @@ const Tenants = () => {
     if ('q' in changedFilterFields) {
       debouncedQUpdate(changedFilterFields.q);
     } else {
-      setQueryParams((prev) => ({ ...prev, ...changedFilterFields }));
+      setQueryParams((prev) => ({
+        ...prev,
+        ...changedFilterFields,
+        currentPage: 1,
+      }));
     }
   };
 
@@ -167,7 +172,7 @@ const Tenants = () => {
             total: tenants?.total,
             pageSize: queryParams.perPage,
             current: queryParams.currentPage,
-            showTotal: (total, range) =>
+            showTotal: (total: number, range: number[]) =>
               `${range[0]}-${range[1]} of ${total} items`,
             onChange: (page) => {
               setQueryParams((prev) => ({

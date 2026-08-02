@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Card, Col, Form, Input, Row, Select, Space } from 'antd';
-import { getTenants } from '../../https/api';
+import { checkEmail, getTenants } from '../../https/api';
 import type { Tenant } from '../../types';
 
 const UserForm = () => {
@@ -9,6 +9,10 @@ const UserForm = () => {
     queryFn: async () => {
       return await getTenants().then((res) => res.data);
     },
+  });
+
+  const { mutateAsync: checkEmailMutation } = useMutation({
+    mutationFn: checkEmail,
   });
   return (
     <Space orientation='vertical' size='large'>
@@ -46,14 +50,40 @@ const UserForm = () => {
             <Form.Item
               label='Email'
               name='email'
+              validateTrigger='onBlur'
               rules={[
                 {
                   required: true,
-                  message: 'Email is required required',
+                  message: 'Email is required',
                 },
                 {
                   type: 'email',
-                  message: 'Email is  not valid',
+                  message: 'Email is not valid',
+                },
+                {
+                  validator: async (_, value) => {
+                    if (!value) {
+                      return Promise.resolve();
+                    }
+
+                    try {
+                      const { data } = await checkEmailMutation({
+                        email: value,
+                      });
+
+                      if (data.exists) {
+                        return Promise.reject(
+                          new Error('Email already exists'),
+                        );
+                      }
+
+                      return Promise.resolve();
+                    } catch {
+                      return Promise.reject(
+                        new Error('Unable to validate email'),
+                      );
+                    }
+                  },
                 },
               ]}
             >

@@ -172,6 +172,7 @@ const Users = () => {
             <Typography.Text type='danger'>{error.message}</Typography.Text>
           )}
         </Flex>
+
         <Form form={filterForm} onFieldsChange={onFilterChange}>
           <UsersFilter>
             <Button
@@ -210,14 +211,15 @@ const Users = () => {
             total: users?.total,
             pageSize: queryParams.perPage,
             current: queryParams.currentPage,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`,
+
             onChange: (page) => {
               console.log(page);
-              setQueryParams((prev) => {
-                return {
-                  ...prev,
-                  currentPage: page,
-                };
-              });
+              setQueryParams((prev) => ({
+                ...prev,
+                currentPage: page,
+              }));
             },
           }}
         />

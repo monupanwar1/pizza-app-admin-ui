@@ -17,6 +17,7 @@ export type User = {
   createdAt: string;
   tenant: Tenant | null;
 };
+
 export type FieldData = {
   name: string[];
   value?: string;
@@ -33,3 +34,7 @@ export type CreateTenantData = {
   name: string;
   address: string;
 };
+
+export interface CheckEmailQuery {
+  email: string;
+}

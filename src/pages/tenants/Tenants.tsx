@@ -1,11 +1,25 @@
-import { PlusOutlined, RightOutlined } from '@ant-design/icons';
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from '@ant-design/icons';
 import {
   keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from 'antd';
+import {
+  Breadcrumb,
+  Button,
+  Drawer,
+  Form,
+  Space,
+  Spin,
+  Table,
+  theme,
+  Typography,
+} from 'antd';
 import { debounce } from 'lodash';
 import React, { useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router';
@@ -54,7 +68,7 @@ const Tenants = () => {
   // get
   const {
     data: tenants,
-    isLoading,
+    isFetching,
     isError,
     error,
   } = useQuery({
@@ -126,8 +140,12 @@ const Tenants = () => {
             { title: 'Restaurant' },
           ]}
         />
-        {isLoading && <div>Loading...</div>}
-        {isError && <div>{error.message}</div>}
+        {isFetching && (
+          <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} />}></Spin>
+        )}
+        {isError && (
+          <Typography.Text type='danger'>{error.message}</Typography.Text>
+        )}
 
         <Form form={filterForm} onFieldsChange={onFilterChange}>
           <TenantFilter>

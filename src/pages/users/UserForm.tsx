@@ -4,10 +4,11 @@ import { checkEmail, getTenants } from '../../https/api';
 import type { Tenant } from '../../types';
 
 const UserForm = () => {
+  const selectedRole = Form.useWatch('role');
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
     queryFn: async () => {
-      return await getTenants().then((res) => res.data);
+      return await getTenants('').then((res) => res.data);
     },
   });
 
@@ -136,32 +137,32 @@ const UserForm = () => {
               ></Select>
             </Form.Item>
           </Col>
-          <Col span={12}>
-            <Form.Item
-              label='Restaurant'
-              name='tenantId'
-              rules={
-                [
-                  // {
-                  //   required: true,
-                  //   message: 'Restaurant is required',
-                  // },
-                ]
-              }
-            >
-              <Select
-                style={{ width: '100%' }}
-                allowClear={true}
-                onChange={() => {}}
-                placeholder='Select restaurant'
-                options={tenants?.map((tenant: Tenant) => ({
-                  value: tenant.id,
-                  key: tenant.id,
-                  label: tenant.name,
-                }))}
-              ></Select>
-            </Form.Item>
-          </Col>
+          {selectedRole === 'manager' && (
+            <Col span={12}>
+              <Form.Item
+                label='Restaurant'
+                name='tenantId'
+                rules={[
+                  {
+                    required: true,
+                    message: 'Restaurant is required',
+                  },
+                ]}
+              >
+                <Select
+                  style={{ width: '100%' }}
+                  allowClear={true}
+                  onChange={() => {}}
+                  placeholder='Select restaurant'
+                  options={tenants?.data.map((tenant: Tenant) => ({
+                    value: tenant.id,
+                    key: tenant.id,
+                    label: tenant.name,
+                  }))}
+                ></Select>
+              </Form.Item>
+            </Col>
+          )}
         </Row>
       </Card>
     </Space>

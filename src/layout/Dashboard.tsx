@@ -11,7 +11,7 @@ import {
   theme,
 } from 'antd';
 import { useState } from 'react';
-import { Navigate, NavLink, Outlet } from 'react-router';
+import { Navigate, NavLink, Outlet, useLocation } from 'react-router';
 import BasketIcon from '../components/icons/BasketIcon';
 import { foodIcon } from '../components/icons/FoodIcon';
 import GiftIcon from '../components/icons/GiftIcon';
@@ -30,16 +30,12 @@ const getMenuItem = (role: string) => {
       label: <NavLink to='/'>Home</NavLink>,
     },
 
-    // {
-    //   key: '/products',
-    //   icon: <Icon component={foodIcon} />,
-    //   label: <NavLink to='/products'>Products</NavLink>,
-    // },
     {
-      key: '/orders',
+      key: '/products',
       icon: <Icon component={BasketIcon} />,
-      label: <NavLink to='/orders'>Orders</NavLink>,
+      label: <NavLink to='/products'>Products</NavLink>,
     },
+
     {
       key: '/promos',
       icon: <Icon component={GiftIcon} />,
@@ -65,6 +61,7 @@ const getMenuItem = (role: string) => {
 };
 
 const Dashboard = () => {
+  const location = useLocation();
   const { logout: logoutFromStore } = useAuthStore();
 
   const { mutate: logoutMutate } = useMutation({
@@ -80,9 +77,16 @@ const Dashboard = () => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+
   const { user } = useAuthStore();
-  if (!user) {
-    return <Navigate to='/auth/login' replace />;
+
+  if (user === null) {
+    return (
+      <Navigate
+        to={`/auth/login?returnTo=${encodeURIComponent(location.pathname)}`}
+        replace
+      />
+    );
   }
 
   const items = getMenuItem(user.role);
@@ -100,7 +104,7 @@ const Dashboard = () => {
           </div>
           <Menu
             theme='light'
-            defaultSelectedKeys={['1']}
+            defaultSelectedKeys={[location.pathname]}
             mode='inline'
             items={items}
           />

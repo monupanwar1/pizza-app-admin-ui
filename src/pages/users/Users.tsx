@@ -21,12 +21,12 @@ import {
   theme,
   Typography,
 } from 'antd';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router';
 // import { PER_PAGE } from '../../constants';
 import { debounce } from 'lodash';
 import { PER_PAGE } from '../../constants';
-import { createUser, getUsers } from '../../https/api';
+import { createUser, getUsers, updateUser } from '../../https/api';
 import { useAuthStore } from '../../store';
 import type { CreateUserData, FieldData, User } from '../../types';
 import UserForm from './UserForm';
@@ -86,6 +86,15 @@ const Users = () => {
     null,
   );
 
+  useEffect(() => {
+    if (!currentEditingUser) return;
+
+    form.setFieldsValue({
+      ...currentEditingUser,
+      tenantId: currentEditingUser.tenant?.id,
+    });
+  }, [currentEditingUser, form]);
+
   const {
     data: users,
     isFetching,
@@ -105,6 +114,17 @@ const Users = () => {
     placeholderData: keepPreviousData,
   });
 
+  const { mutate: updateUserMutation } = useMutation({
+    mutationKey: ['update-user'],
+    mutationFn: async (data: CreateUserData) => {
+      updateUser(data, currentEditingUser!.id).then((res) => res.data);
+    },
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      return;
+    },
+  });
+
   const { mutate: userMutate } = useMutation({
     mutationKey: ['user'],
     mutationFn: async (data: CreateUserData) =>
@@ -117,8 +137,14 @@ const Users = () => {
 
   const onHandleSubmit = async () => {
     await form.validateFields();
-    await userMutate(form.getFieldsValue());
+    const isEditMode = !!currentEditingUser;
+    if (isEditMode) {
+      await updateUserMutation(form.getFieldsValue());
+    } else {
+      await userMutate(form.getFieldsValue());
+    }
     form.resetFields();
+    setCurrentEditingUser(null);
     setDrawerOpen(false);
   };
 
@@ -196,7 +222,10 @@ const Users = () => {
                   <Space>
                     <Button
                       type='link'
-                      onClick={() => setCurrentEditingUser(record)}
+                      onClick={() => (
+                        setCurrentEditingUser(record),
+                        setDrawerOpen(true)
+                      )}
                     >
                       Edit
                     </Button>
@@ -239,6 +268,7 @@ const Users = () => {
               <Button
                 onClick={() => {
                   form.resetFields();
+                  setCurrentEditingUser(null);
                   setDrawerOpen(false);
                 }}
               >
@@ -251,7 +281,7 @@ const Users = () => {
           }
         >
           <Form layout='vertical' form={form}>
-            <UserForm />
+            <UserForm isEditMode={!!currentEditingUser} />
           </Form>
         </Drawer>
       </Space>

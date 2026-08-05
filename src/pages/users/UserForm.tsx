@@ -3,7 +3,7 @@ import { Card, Col, Form, Input, Row, Select, Space } from 'antd';
 import { checkEmail, getTenants } from '../../https/api';
 import type { Tenant } from '../../types';
 
-const UserForm = () => {
+const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
   const selectedRole = Form.useWatch('role');
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
@@ -61,31 +61,35 @@ const UserForm = () => {
                   type: 'email',
                   message: 'Email is not valid',
                 },
-                {
-                  validator: async (_, value) => {
-                    if (!value) {
-                      return Promise.resolve();
-                    }
+                ...(isEditMode
+                  ? []
+                  : [
+                      {
+                        validator: async (_: unknown, value: string) => {
+                          if (!value) {
+                            return Promise.resolve();
+                          }
 
-                    try {
-                      const { data } = await checkEmailMutation({
-                        email: value,
-                      });
+                          try {
+                            const { data } = await checkEmailMutation({
+                              email: value,
+                            });
 
-                      if (data.exists) {
-                        return Promise.reject(
-                          new Error('Email already exists'),
-                        );
-                      }
+                            if (data.exists) {
+                              return Promise.reject(
+                                new Error('Email already exists'),
+                              );
+                            }
 
-                      return Promise.resolve();
-                    } catch {
-                      return Promise.reject(
-                        new Error('Unable to validate email'),
-                      );
-                    }
-                  },
-                },
+                            return Promise.resolve();
+                          } catch {
+                            return Promise.reject(
+                              new Error('Unable to validate email'),
+                            );
+                          }
+                        },
+                      },
+                    ]),
               ]}
             >
               <Input size='large' />
@@ -93,24 +97,26 @@ const UserForm = () => {
           </Col>
         </Row>
       </Card>
-      <Card title='Security info' variant='borderless'>
-        <Row gutter={20}>
-          <Col span={12}>
-            <Form.Item
-              label='Password'
-              name='password'
-              rules={[
-                {
-                  required: true,
-                  message: 'Password required',
-                },
-              ]}
-            >
-              <Input.Password size='large' />
-            </Form.Item>
-          </Col>
-        </Row>
-      </Card>
+      {!isEditMode && (
+        <Card title='Security info' variant='borderless'>
+          <Row gutter={20}>
+            <Col span={12}>
+              <Form.Item
+                label='Password'
+                name='password'
+                rules={[
+                  {
+                    required: true,
+                    message: 'Password required',
+                  },
+                ]}
+              >
+                <Input.Password size='large' />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Card>
+      )}
       <Card title='Role' variant='borderless'>
         <Row gutter={20}>
           <Col span={12}>

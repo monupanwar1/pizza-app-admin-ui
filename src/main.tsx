@@ -6,16 +6,7 @@ import { RouterProvider } from 'react-router/dom';
 import './index.css';
 import { router } from './router.tsx';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: Infinity,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    },
-  },
-});
+const queryClient = new QueryClient({});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
